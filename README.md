@@ -7,7 +7,7 @@ We all love our custom data constructors
 data Person = Person Name Age 
 
 type Name = String
-type Age  = Nat
+type Age  = Int
 ```
 
 Of course accessing the Name and Age *fields* get tedious really fast
@@ -59,7 +59,7 @@ data PersonR = PersonR { name :: Name
                        }
 
 data CatR = CatR { name :: Name       -- ERROR: Multiple declarations of `name`
-                 , tailLenght :: Nat 
+                 , tailLenght :: Int 
                  }
 ```
 
@@ -99,7 +99,7 @@ Now, let's see a more detailed example that demonstrates the root of the problem
 We will formalize the [Tower of Hanoi](https://en.wikipedia.org/wiki/Tower_of_Hanoi) problem.
 
 ```hs
-type Brick = Nat
+type Brick = Int
 type Tower = [Brick]
 
 data Towers = Towers { firstPole  :: Tower
@@ -108,15 +108,23 @@ data Towers = Towers { firstPole  :: Tower
                      }
 ```
 
+Now we'd like to defina a function `moveBrick` that moves a brick from the one pole to another in the Towers data structure.
+Let's address the pole positions by custom type `date Pole = First | Second | Third` instead of f.e. `Int` so we don't have partial function defined only on `0`, `1` and `2`.
+
 ```hs
+```
+
+```hs
+data Pole = First | Second | Third
+
 moveBrick :: Pole -> Pole -> Towers -> Towers
 moveBrick fromPole toPole =
   let [fromTower, toTower] = map poleToAccessor [from,to]
       (topBrick:restBricks) = fromTower
-    in (replace from topBricks . replace to (topBrick:toTower)) towers
+    in (replaceTower from topBricks . replaceTower to (topBrick:toTower))
 
-replace :: Pole -> Tower -> Towers
-replace pole newTower =
+replaceTower :: Pole -> Tower -> Towers -> Towers
+replaceTower pole newTower =
   case pole of
        First  -> Towers {firstPole  = newTower}
        Second -> Towers {secondPole = newTower}
@@ -124,7 +132,7 @@ replace pole newTower =
 ```
 *For educational purposes, we are not taking care of edge cases as fromTower having no bricks, ot the topBrick being bigger than the top brick on the top of toTower but that.*
 
-Ah we had to define another function (`replace`) that uses the forementioned correspondence
+Ah we had to define another function (`replaceTower`) that uses the forementioned correspondence
 
 <img src="https://i1.sndcdn.com/artworks-000322933404-2qsvhm-t500x500.jpg" style="width:200px;box-shadow:none"/>
 
